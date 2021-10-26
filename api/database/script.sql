@@ -1,0 +1,36 @@
+CREATE DATABASE `educacaodb` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+CREATE TABLE `consulta_caed` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `materia` varchar(45) DEFAULT NULL,
+  `sala` int(11) DEFAULT NULL,
+  `serie` varchar(45) DEFAULT NULL,
+  `participacao` varchar(45) DEFAULT NULL,
+  `numero_itens_respondidos` int(11) DEFAULT NULL,
+  `porcento_acertos` double DEFAULT NULL,
+  `categoriad desempenho` int(11) DEFAULT NULL,
+  `tipo_intervencao` int(11) DEFAULT NULL,
+  `itens_acertados` int(11) DEFAULT NULL,
+  `h_01` varchar(45) DEFAULT NULL,
+  `h_02` varchar(45) DEFAULT NULL,
+  `h_03` varchar(45) DEFAULT NULL,
+  `h_04` varchar(45) DEFAULT NULL,
+  `h_05` varchar(45) DEFAULT NULL,
+  `h_06` varchar(45) DEFAULT NULL,
+  `h_07` varchar(45) DEFAULT NULL,
+  `h_08` varchar(45) DEFAULT NULL,
+  `h_09` varchar(45) DEFAULT NULL,
+  `h_10` varchar(45) DEFAULT NULL,
+  `h_11` varchar(45) DEFAULT NULL,
+  `h_12` varchar(45) DEFAULT NULL,
+  `h_13` varchar(45) DEFAULT NULL,
+  `h_14` varchar(45) DEFAULT NULL,
+  `h_15` varchar(45) DEFAULT NULL,
+  `h_16` varchar(45) DEFAULT NULL,
+  `h_17` varchar(45) DEFAULT NULL,
+  `h_18` varchar(45) DEFAULT NULL,
+  `h_19` varchar(45) DEFAULT NULL,
+  `h_20` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
