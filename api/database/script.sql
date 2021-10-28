@@ -2,9 +2,12 @@ CREATE DATABASE `educacaodb` /*!40100 DEFAULT CHARACTER SET latin1 */;
 
 CREATE TABLE `consulta_caed` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ano` int(11) DEFAULT NULL,
   `materia` varchar(45) DEFAULT NULL,
-  `sala` int(11) DEFAULT NULL,
-  `serie` varchar(45) DEFAULT NULL,
+  `turma` varchar(45) DEFAULT NULL,
+  `serie` int(11) DEFAULT NULL,
+  `bimestre` int(11) DEFAULT NULL,  
+  `estudante` varchar(250) DEFAULT NULL,  
   `participacao` varchar(45) DEFAULT NULL,
   `numero_itens_respondidos` int(11) DEFAULT NULL,
   `porcento_acertos` double DEFAULT NULL,
@@ -31,6 +34,28 @@ CREATE TABLE `consulta_caed` (
   `h_18` varchar(45) DEFAULT NULL,
   `h_19` varchar(45) DEFAULT NULL,
   `h_20` varchar(45) DEFAULT NULL,
+  `h_21` varchar(45) DEFAULT NULL,
+  `h_22` varchar(45) DEFAULT NULL,
+  `h_23` varchar(45) DEFAULT NULL,
+  `h_24` varchar(45) DEFAULT NULL,
+  `h_25` varchar(45) DEFAULT NULL,
+  `h_26` varchar(45) DEFAULT NULL,
+  `h_27` varchar(45) DEFAULT NULL,
+  `h_28` varchar(45) DEFAULT NULL,
+  `h_29` varchar(45) DEFAULT NULL,
+  `h_30` varchar(45) DEFAULT NULL,   
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `habilidade_caed` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ano` int(11) DEFAULT NULL,
+  `materia` varchar(45) DEFAULT NULL,
+  `turma` varchar(45) DEFAULT NULL,
+  `serie` int(11) DEFAULT NULL,
+  `bimestre` int(11) DEFAULT NULL,  
+  `questao` varchar(45) DEFAULT NULL,  
+  `cod_da_habilidade` varchar(45) DEFAULT NULL,   
+   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
