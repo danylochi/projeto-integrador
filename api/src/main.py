@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import FastAPI, File, UploadFile
 import pandas
 import mysql.connector
+from fastapi.encoders import jsonable_encoder
 
 #cria conexão com o banco de dados mysql
 conexion = mysql.connector.connect(user='root', password='root',
@@ -19,11 +20,44 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/consultacaed/")
+def read_item(ano: int, materia: str, turma: str, serie: int, bimestre: int):
+#prepara query de consulta 
+    query_consulta=conexion.cursor()
 
+    #cria string com comando de consulta 
+    string_consulta= ("SELECT * FROM educacaodb.consulta_caed "
+        " WHERE ano = %(ano)s"
+        " AND materia = %(materia)s"
+        " AND turma = %(turma)s"
+        " AND serie = %(serie)s"
+        " AND bimestre = %(bimestre)s")
 
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_consulta = {
+        'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'bimestre': bimestre
+    }
+        
+    #executa a consulta   
+    query_consulta.execute(string_consulta, data_consulta)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results= query_consulta.fetchall()
+
+    #extrai cabeçalho da linha
+    row_headers=[x[0] for x in query_consulta.description]
+
+    #inicializa a array de json
+    json_data=[]
+
+    #percorre dados da query de consulta e insere no json
+    for row in results:
+        json_data.append(dict(zip(row_headers,row)))
+    
+    #converte para json
+    json_compatible_item_data = jsonable_encoder(json_data)
+
+    return json_compatible_item_data
 
 @app.post("/uploadfile/")
 async def create_upload_file(content: UploadFile = File(...)):
@@ -155,7 +189,6 @@ async def create_upload_file(content: UploadFile = File(...)):
         
     row_one=next(data_frame.iterrows())[1]
 
-    print(row_one)
 
     #percorre planilha linha a linha através do data frame 
     for i in range(1,31):
