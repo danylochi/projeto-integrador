@@ -1,4 +1,4 @@
-from typing import Optional
+#from typing import Optional
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
 import pandas
@@ -45,17 +45,25 @@ async def download_caed(ano: int, materia: str, turma: str, serie: int, bimestre
     #extrai cabeçalho da linha
     row_headers=[x[0] for x in query_consulta.description]
 
+    print(results)
+
     data_frame = pandas.DataFrame(results, columns = row_headers)
 
-    stream = io.StringIO()
+    output = io.BytesIO()
+    writer = pandas.ExcelWriter(output, engine = 'xlsxwriter')
 
-    data_frame.to_excel(stream)
+    data_frame.to_excel(writer, index=False)
+
+    writer.close()
+
+    #go back to the beginning of the stream
+    output.seek(0)
 
 
     headers = {
         'Content-Disposition': 'attachment; filename="file.xlsx"'
     }
-    return StreamingResponse(iter([stream.getvalue()]), headers=headers,media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    return StreamingResponse(output, headers=headers,media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
    
 
@@ -108,6 +116,9 @@ async def create_upload_file(content: UploadFile = File(...)):
     #ler conteúdo da memória e converter para data frame 
     data_frame = pandas.read_excel(content_in_memory)
 
+    #data_frame['H 01'] = data_frame['H 01'].dt.strftime('%d/%m')
+    #data_frame['H 01'] = data_frame['H 01'].astype(str)
+    #print(data_frame['H 01'])
     #conexion.open() 
 
     #---------------------------------COMANDOS TABELA CONSULTA CAED------------------------------------------------------
