@@ -2,6 +2,7 @@ CREATE DATABASE `educacaodb` /*!40100 DEFAULT CHARACTER SET latin1 */;
 
 CREATE TABLE `consulta_caed` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `recuperacao_continuada` varchar(45) DEFAULT NULL,
   `ano` int(11) DEFAULT NULL,
   `materia` varchar(45) DEFAULT NULL,
   `turma` varchar(45) DEFAULT NULL,
