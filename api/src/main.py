@@ -5,6 +5,7 @@ import pandas
 import mysql.connector
 from fastapi.encoders import jsonable_encoder
 import io
+from fastapi.middleware.cors import CORSMiddleware
 
 #cria conexão com o banco de dados mysql
 conexion = mysql.connector.connect(user='root', password='root',
@@ -16,9 +17,23 @@ conexion = mysql.connector.connect(user='root', password='root',
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-@app.get("/downloadfile/")
+
+@app.post("/downloadfile/")
 async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: int, bimestre: int, vazia: int = 0):
 #prepara query de consulta 
     query_consulta=conexion.cursor()
@@ -71,8 +86,8 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
         " FROM educacaodb.consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
-        " AND materia = %(materia)s"
-        " AND turma = %(turma)s"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -130,8 +145,8 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     string_consulta= ("SELECT * FROM educacaodb.consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
-        " AND materia = %(materia)s"
-        " AND turma = %(turma)s"
+        " AND UPPER(materia = %(materia)s)"
+        " AND UPPER(turma = %(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -170,8 +185,8 @@ def consulta_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int)
     #cria string com comando de consulta 
     string_consulta= ("SELECT * FROM educacaodb.habilidade_caed "
         " WHERE ano = %(ano)s"
-        " AND materia = %(materia)s"
-        " AND turma = %(turma)s"
+        " AND UPPER(materia = %(materia)s)"
+        " AND UPPER(turma = %(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -294,11 +309,11 @@ async def create_upload_file(content: UploadFile = File(...)):
     string_consulta= ("SELECT * FROM educacaodb.consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
-        " AND materia = %(materia)s"
-        " AND turma = %(turma)s"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s"
-        " AND estudante = %(estudante)s")         
+        " AND UPPER(estudante) = UPPER(%(estudante)s)")         
 
     #prepara query de update 
     query_update=conexion.cursor()
