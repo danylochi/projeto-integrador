@@ -53,36 +53,36 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
         " categoria_desempenho AS `CATEGORIA DE DESEMPENHO`, "
         " tipo_intervencao AS `TIPO DE INTERVENÇÃO`, "
         " itens_acertados AS `ITENS ACERTADOS`, "
-        " h_01 AS `H 01`, "
-        " h_02 AS `H 02`, "
-        " h_03 AS `H 03`, "
-        " h_04 AS `H 04`, "
-        " h_05 AS `H 05`, "
-        " h_06 AS `H 06`, "
-        " h_07 AS `H 07`, "
-        " h_08 AS `H 08`, "
-        " h_09 AS `H 09`, "
-        " h_10 AS `H 10`, "
-        " h_11 AS `H 11`, "
-        " h_12 AS `H 12`, "
-        " h_13 AS `H 13`, "
-        " h_14 AS `H 14`, "
-        " h_15 AS `H 15`, "
-        " h_16 AS `H 16`, "
-        " h_17 AS `H 17`, "
-        " h_18 AS `H 18`, "
-        " h_19 AS `H 19`, "
-        " h_20 AS `H 20`, "
-        " h_21 AS `H 21`, "
-        " h_22 AS `H 22`, "
-        " h_23 AS `H 23`, "
-        " h_24 AS `H 24`, "
-        " h_25 AS `H 25`, "
-        " h_26 AS `H 26`, "
-        " h_27 AS `H 27`, "
-        " h_28 AS `H 28`, "
-        " h_29 AS `H 29`, "
-        " h_30 AS `H 30` "    
+        " h_01, "
+        " h_02, "
+        " h_03, "
+        " h_04, "
+        " h_05, "
+        " h_06, "
+        " h_07, "
+        " h_08, "
+        " h_09, "
+        " h_10, "
+        " h_11, "
+        " h_12, "
+        " h_13, "
+        " h_14, "
+        " h_15, "
+        " h_16, "
+        " h_17, "
+        " h_18, "
+        " h_19, "
+        " h_20, "
+        " h_21, "
+        " h_22, "
+        " h_23, "
+        " h_24, "
+        " h_25, "
+        " h_26, "
+        " h_27, "
+        " h_28, "
+        " h_29, "
+        " h_30 "    
         " FROM educacaodb.consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
@@ -106,8 +106,39 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
     #força carregar todos os dados da consulta, ignora modo lazy            
     results= query_consulta.fetchall()
 
+    #------------------BUSCAR CÓDIGO DA HABILIDADE-----------------------------------#
+    query_habilidade=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_habilidade= ("SELECT * FROM educacaodb.habilidade_caed "
+        " WHERE ano = %(ano)s"
+        " AND UPPER(materia = %(materia)s)"
+        " AND UPPER(turma = %(turma)s)"
+        " AND serie = %(serie)s"
+        " AND bimestre = %(bimestre)s")
+
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_habilidade = {
+        'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'bimestre': bimestre
+    }
+        
+    #executa a consulta   
+    query_habilidade.execute(string_habilidade, data_habilidade)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results_habilidade= query_habilidade.fetchall()
+    #-----------------------------------------------------#
+
     #extrai cabeçalho da linha
     row_headers=[x[0] for x in query_consulta.description]
+
+    for i in range(len(row_headers)):
+        for row in results_habilidade:
+            print(row)
+            if (row[6] == row_headers[i] and row[7] != None):
+                row_headers[i] = row[7]
+            else:
+                row_headers[i] = row_headers[i].upper().replace("_", " ")
 
     data_frame = pandas.DataFrame(results, columns = row_headers)
 
@@ -155,6 +186,7 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
         'recuperacao': recuperacao,
         'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'bimestre': bimestre
     }
+
         
     #executa a consulta   
     query_consulta.execute(string_consulta, data_consulta)
@@ -162,8 +194,37 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     #força carregar todos os dados da consulta, ignora modo lazy            
     results= query_consulta.fetchall()
 
+    #------------------BUSCAR CÓDIGO DA HABILIDADE-----------------------------------#
+    query_habilidade=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_habilidade= ("SELECT * FROM educacaodb.habilidade_caed "
+        " WHERE ano = %(ano)s"
+        " AND UPPER(materia = %(materia)s)"
+        " AND UPPER(turma = %(turma)s)"
+        " AND serie = %(serie)s"
+        " AND bimestre = %(bimestre)s")
+
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_habilidade = {
+        'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'bimestre': bimestre
+    }
+        
+    #executa a consulta   
+    query_habilidade.execute(string_habilidade, data_habilidade)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results_habilidade= query_habilidade.fetchall()
+    #-----------------------------------------------------#
+
     #extrai cabeçalho da linha
     row_headers=[x[0] for x in query_consulta.description]
+
+    for i in range(len(row_headers)):
+        for row in results_habilidade:
+            print(row)
+            if (row[6] == row_headers[i] and row[7] != None):
+                row_headers[i] = row[7]
 
     #inicializa a array de json
     json_data=[]
@@ -269,6 +330,11 @@ def consulta_caed(id: int, cod_da_habilidade: str):
     
     #converte para json
     json_compatible_item_data = jsonable_encoder(json_data)
+
+    conexion.commit()
+
+    query_update.close()
+    query_consulta.close()
 
     return json_compatible_item_data
 
