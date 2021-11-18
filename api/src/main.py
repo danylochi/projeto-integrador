@@ -112,8 +112,8 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
     #cria string com comando de consulta 
     string_habilidade= ("SELECT * FROM educacaodb.habilidade_caed "
         " WHERE ano = %(ano)s"
-        " AND UPPER(materia = %(materia)s)"
-        " AND UPPER(turma = %(turma)s)"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -176,8 +176,8 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     string_consulta= ("SELECT * FROM educacaodb.consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
-        " AND UPPER(materia = %(materia)s)"
-        " AND UPPER(turma = %(turma)s)"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -200,8 +200,8 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     #cria string com comando de consulta 
     string_habilidade= ("SELECT * FROM educacaodb.habilidade_caed "
         " WHERE ano = %(ano)s"
-        " AND UPPER(materia = %(materia)s)"
-        " AND UPPER(turma = %(turma)s)"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -216,22 +216,30 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     #força carregar todos os dados da consulta, ignora modo lazy            
     results_habilidade= query_habilidade.fetchall()
     #-----------------------------------------------------#
-
     #extrai cabeçalho da linha
-    row_headers=[x[0] for x in query_consulta.description]
-
-    for i in range(len(row_headers)):
+    row_headers = [x[0] for x in query_consulta.description]
+    
+    row_header_table = [x for x in row_headers if x.find("h_") > -1]
+    
+    for i in range(len(row_header_table)):
+        alterou = False
         for row in results_habilidade:
-            print(row)
-            if (row[6] == row_headers[i] and row[7] != None):
-                row_headers[i] = row[7]
+            if (row[6] == row_header_table[i] and row[7] != None):
+                row_header_table[i] = row[7]
+                alterou = True
+        
+        if (not(alterou)):
+            row_header_table[i] = row_header_table[i].upper().replace("_"," ")
 
     #inicializa a array de json
-    json_data=[]
+    json_array=[]
+
 
     #percorre dados da query de consulta e insere no json
     for row in results:
-        json_data.append(dict(zip(row_headers,row)))
+        json_array.append(dict(zip(row_headers,row)))
+
+    json_data = {'dataCaed':json_array, 'table_header': row_header_table}   
     
     #converte para json
     json_compatible_item_data = jsonable_encoder(json_data)
@@ -240,14 +248,14 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
 #-----------------------------------------------------------------------------------------
 @app.get("/habilidadecaed/")
 def consulta_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int):
-#prepara query de consulta 
+    #prepara query de consulta 
     query_consulta=conexion.cursor()
 
     #cria string com comando de consulta 
     string_consulta= ("SELECT * FROM educacaodb.habilidade_caed "
         " WHERE ano = %(ano)s"
-        " AND UPPER(materia = %(materia)s)"
-        " AND UPPER(turma = %(turma)s)"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
         " AND serie = %(serie)s"
         " AND bimestre = %(bimestre)s")
 
@@ -349,6 +357,7 @@ async def create_upload_file(content: UploadFile = File(...)):
     #ler conteúdo da memória e converter para data frame 
     data_frame = pandas.read_excel(content_in_memory)
 
+    data_frame.fillna("-", inplace = True)
     
     #conexion.open() 
 
@@ -432,17 +441,17 @@ async def create_upload_file(content: UploadFile = File(...)):
         data_aluno = {
         'recuperacao': row['RECUPERACAO CONTINUADA'],'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'bimestre': row['Bimestre'], 
         'estudante': row['ESTUDANTE'], 'participacao': row['PARTICIPAÇÃO'], 'numero_itens_respondidos': row['Nº DE ITENS RESPONDIDOS'], 
-        'porcento_acertos': row['% ACERTOS'], 'categoria_desempenho': row['CATEGORIA DE DESEMPENHO'], 
+        'porcento_acertos': row['% ACERTOS'], 'categoria_desempenho': row.get('CATEGORIA DE DESEMPENHO', '-'), 
         'tipo_intervencao': row['TIPO DE INTERVENÇÃO'], 'itens_acertados': row['ITENS ACERTADOS'], 
-        'h_01': row['H 01'], 'h_02': row['H 02'], 'h_03': row['H 03'], 'h_04': row['H 04'], 'h_05': row['H 05'], 'h_06': row['H 06'], 
-        'h_07': row['H 07'], 
-        'h_08': row['H 08'], 'h_09': row['H 09'], 'h_10': row['H 10'], 'h_11': row['H 11'], 'h_12': row['H 12'], 'h_13': row['H 13'], 
-        'h_14': row['H 14'], 
-        'h_15': row['H 15'], 'h_16': row['H 16'], 'h_17': row['H 17'], 'h_18': row['H 18'], 'h_19': row['H 19'], 'h_20': row['H 20'], 
-        'h_21': row['H 21'], 
-        'h_22': row['H 22'], 'h_23': row['H 23'], 'h_24': row['H 24'], 'h_25': row['H 25'], 'h_26': row['H 26'], 'h_27': row['H 27'], 
-        'h_28': row['H 28'], 
-        'h_29': row['H 29'], 'h_30': row['H 30']
+        'h_01': row.get('H 01', '-'), 'h_02': row.get('H 02', '-'), 'h_03': row.get('H 03', '-'), 'h_04': row.get('H 04', '-'), 'h_05': row.get('H 05', '-'), 'h_06': row.get('H 06', '-'), 
+        'h_07': row.get('H 07', '-'), 
+        'h_08': row.get('H 08', '-'), 'h_09': row.get('H 09', '-'), 'h_10': row.get('H 10', '-'), 'h_11': row.get('H 11', '-'), 'h_12': row.get('H 12', '-'), 'h_13': row.get('H 13', '-'), 
+        'h_14': row.get('H 14', '-'), 
+        'h_15': row.get('H 15', '-'), 'h_16': row.get('H 16', '-'), 'h_17': row.get('H 17', '-'), 'h_18': row.get('H 18', '-'), 'h_19': row.get('H 19', '-'), 'h_20': row.get('H 20', '-'), 
+        'h_21': row.get('H 21', '-'), 
+        'h_22': row.get('H 22', '-'), 'h_23': row.get('H 23', '-'), 'h_24': row.get('H 24', '-'), 'h_25': row.get('H 25', '-'), 'h_26': row.get('H 26', '-'), 'h_27': row.get('H 27', '-'), 
+        'h_28': row.get('H 28', '-'), 
+        'h_29': row.get('H 29', '-'), 'h_30': row.get('H 30', '-')
         } 
 
         #cria dados de aluno com o conteúdo da linha para consulta  
