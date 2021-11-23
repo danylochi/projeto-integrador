@@ -134,7 +134,6 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
 
     for i in range(len(row_headers)):
         for row in results_habilidade:
-            print(row)
             if (row[6] == row_headers[i] and row[7] != None):
                 row_headers[i] = row[7]
             else:
@@ -247,7 +246,7 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     return json_compatible_item_data
 #-----------------------------------------------------------------------------------------
 @app.get("/habilidadecaed/")
-def consulta_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int):
+def habilidade_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int):
     #prepara query de consulta 
     query_consulta=conexion.cursor()
 
@@ -286,7 +285,7 @@ def consulta_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int)
     return json_compatible_item_data
 #-------------------------------------------------------------------------------------------------
 @app.put("/habilidadecaed/{id}")
-def consulta_caed(id: int, cod_da_habilidade: str):
+def atualizar_habilidade(id: int, cod_da_habilidade: str):
 
     #prepara query de consulta 
     query_update=conexion.cursor()
@@ -525,3 +524,149 @@ async def create_upload_file(content: UploadFile = File(...)):
     return {"filename": content.filename}
 
 
+@app.get("/resultadocaed/")
+def resultado_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int):
+    #prepara query de consulta 
+    query_consulta=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_consulta= ("SELECT 'NÃO' AS RC, "
+        "       COALESCE((SUM(SUBSTRING(H_01, 1, POSITION('/' IN H_01)-1)) / SUM(SUBSTRING(H_01, POSITION('/' IN H_01)+1, LENGTH(H_01)))) *100,0) AS H_01, "
+        "       COALESCE((SUM(SUBSTRING(H_02, 1, POSITION('/' IN H_02)-1)) / SUM(SUBSTRING(H_02, POSITION('/' IN H_02)+1, LENGTH(H_02)))) *100,0) AS H_02, "
+        "       COALESCE((SUM(SUBSTRING(H_03, 1, POSITION('/' IN H_03)-1)) / SUM(SUBSTRING(H_03, POSITION('/' IN H_03)+1, LENGTH(H_03)))) *100,0) AS H_03, "
+        "       COALESCE((SUM(SUBSTRING(H_04, 1, POSITION('/' IN H_04)-1)) / SUM(SUBSTRING(H_04, POSITION('/' IN H_04)+1, LENGTH(H_04)))) *100,0) AS H_04, "
+        "       COALESCE((SUM(SUBSTRING(H_05, 1, POSITION('/' IN H_05)-1)) / SUM(SUBSTRING(H_05, POSITION('/' IN H_05)+1, LENGTH(H_05)))) *100,0) AS H_05, "
+        "       COALESCE((SUM(SUBSTRING(H_06, 1, POSITION('/' IN H_06)-1)) / SUM(SUBSTRING(H_06, POSITION('/' IN H_06)+1, LENGTH(H_06)))) *100,0) AS H_06, "
+        "       COALESCE((SUM(SUBSTRING(H_07, 1, POSITION('/' IN H_07)-1)) / SUM(SUBSTRING(H_07, POSITION('/' IN H_07)+1, LENGTH(H_07)))) *100,0) AS H_07, "
+        "       COALESCE((SUM(SUBSTRING(H_08, 1, POSITION('/' IN H_08)-1)) / SUM(SUBSTRING(H_08, POSITION('/' IN H_08)+1, LENGTH(H_08)))) *100,0) AS H_08, "
+        "       COALESCE((SUM(SUBSTRING(H_09, 1, POSITION('/' IN H_09)-1)) / SUM(SUBSTRING(H_09, POSITION('/' IN H_09)+1, LENGTH(H_09)))) *100,0) AS H_09, "
+        "       COALESCE((SUM(SUBSTRING(H_10, 1, POSITION('/' IN H_10)-1)) / SUM(SUBSTRING(H_10, POSITION('/' IN H_10)+1, LENGTH(H_10)))) *100,0) AS H_10, "
+        "       COALESCE((SUM(SUBSTRING(H_11, 1, POSITION('/' IN H_11)-1)) / SUM(SUBSTRING(H_11, POSITION('/' IN H_11)+1, LENGTH(H_11)))) *100,0) AS H_11, "
+        "       COALESCE((SUM(SUBSTRING(H_12, 1, POSITION('/' IN H_12)-1)) / SUM(SUBSTRING(H_12, POSITION('/' IN H_12)+1, LENGTH(H_12)))) *100,0) AS H_12, "
+        "       COALESCE((SUM(SUBSTRING(H_13, 1, POSITION('/' IN H_13)-1)) / SUM(SUBSTRING(H_13, POSITION('/' IN H_13)+1, LENGTH(H_13)))) *100,0) AS H_13, "
+        "       COALESCE((SUM(SUBSTRING(H_14, 1, POSITION('/' IN H_14)-1)) / SUM(SUBSTRING(H_14, POSITION('/' IN H_14)+1, LENGTH(H_14)))) *100,0) AS H_14, "
+        "       COALESCE((SUM(SUBSTRING(H_15, 1, POSITION('/' IN H_15)-1)) / SUM(SUBSTRING(H_15, POSITION('/' IN H_15)+1, LENGTH(H_15)))) *100,0) AS H_15, "
+        "       COALESCE((SUM(SUBSTRING(H_16, 1, POSITION('/' IN H_16)-1)) / SUM(SUBSTRING(H_16, POSITION('/' IN H_16)+1, LENGTH(H_16)))) *100,0) AS H_16, "
+        "       COALESCE((SUM(SUBSTRING(H_17, 1, POSITION('/' IN H_17)-1)) / SUM(SUBSTRING(H_17, POSITION('/' IN H_17)+1, LENGTH(H_17)))) *100,0) AS H_17, "
+        "       COALESCE((SUM(SUBSTRING(H_18, 1, POSITION('/' IN H_18)-1)) / SUM(SUBSTRING(H_18, POSITION('/' IN H_18)+1, LENGTH(H_18)))) *100,0) AS H_18, "
+        "       COALESCE((SUM(SUBSTRING(H_19, 1, POSITION('/' IN H_19)-1)) / SUM(SUBSTRING(H_19, POSITION('/' IN H_19)+1, LENGTH(H_19)))) *100,0) AS H_19, "
+        "       COALESCE((SUM(SUBSTRING(H_20, 1, POSITION('/' IN H_20)-1)) / SUM(SUBSTRING(H_20, POSITION('/' IN H_20)+1, LENGTH(H_20)))) *100,0) AS H_20, "
+        "       COALESCE((SUM(SUBSTRING(H_21, 1, POSITION('/' IN H_21)-1)) / SUM(SUBSTRING(H_21, POSITION('/' IN H_21)+1, LENGTH(H_21)))) *100,0) AS H_21, "
+        "       COALESCE((SUM(SUBSTRING(H_22, 1, POSITION('/' IN H_22)-1)) / SUM(SUBSTRING(H_22, POSITION('/' IN H_22)+1, LENGTH(H_22)))) *100,0) AS H_22, "
+        "       COALESCE((SUM(SUBSTRING(H_23, 1, POSITION('/' IN H_23)-1)) / SUM(SUBSTRING(H_23, POSITION('/' IN H_23)+1, LENGTH(H_23)))) *100,0) AS H_23, "
+        "       COALESCE((SUM(SUBSTRING(H_24, 1, POSITION('/' IN H_24)-1)) / SUM(SUBSTRING(H_24, POSITION('/' IN H_24)+1, LENGTH(H_24)))) *100,0) AS H_24, "
+        "       COALESCE((SUM(SUBSTRING(H_25, 1, POSITION('/' IN H_25)-1)) / SUM(SUBSTRING(H_25, POSITION('/' IN H_25)+1, LENGTH(H_25)))) *100,0) AS H_25, "
+        "       COALESCE((SUM(SUBSTRING(H_26, 1, POSITION('/' IN H_26)-1)) / SUM(SUBSTRING(H_26, POSITION('/' IN H_26)+1, LENGTH(H_26)))) *100,0) AS H_26, "
+        "       COALESCE((SUM(SUBSTRING(H_27, 1, POSITION('/' IN H_27)-1)) / SUM(SUBSTRING(H_27, POSITION('/' IN H_27)+1, LENGTH(H_27)))) *100,0) AS H_27, "
+        "       COALESCE((SUM(SUBSTRING(H_28, 1, POSITION('/' IN H_28)-1)) / SUM(SUBSTRING(H_28, POSITION('/' IN H_28)+1, LENGTH(H_28)))) *100,0) AS H_28, "
+        "       COALESCE((SUM(SUBSTRING(H_29, 1, POSITION('/' IN H_29)-1)) / SUM(SUBSTRING(H_29, POSITION('/' IN H_29)+1, LENGTH(H_29)))) *100,0) AS H_29, "
+        "       COALESCE((SUM(SUBSTRING(H_30, 1, POSITION('/' IN H_30)-1)) / SUM(SUBSTRING(H_30, POSITION('/' IN H_30)+1, LENGTH(H_30)))) *100,0) AS H_30  "
+        "  FROM educacaodb.consulta_caed "
+        "         WHERE ano = %(ano)s "
+        "         AND UPPER(materia) = UPPER(%(materia)s) "
+        "         AND UPPER(turma) = UPPER(%(turma)s) "
+        "         AND serie = %(serie)s "
+        "         AND bimestre = %(bimestre)s "
+        "    AND participacao = 'SIM' "
+        "    AND recuperacao_continuada  = 'NÃO' "
+        "UNION ALL "
+        "SELECT 'SIM' AS RC, "
+        "       COALESCE((SUM(SUBSTRING(H_01, 1, POSITION('/' IN H_01)-1)) / SUM(SUBSTRING(H_01, POSITION('/' IN H_01)+1, LENGTH(H_01)))) *100,0) AS H_01, "
+        "       COALESCE((SUM(SUBSTRING(H_02, 1, POSITION('/' IN H_02)-1)) / SUM(SUBSTRING(H_02, POSITION('/' IN H_02)+1, LENGTH(H_02)))) *100,0) AS H_02, "
+        "       COALESCE((SUM(SUBSTRING(H_03, 1, POSITION('/' IN H_03)-1)) / SUM(SUBSTRING(H_03, POSITION('/' IN H_03)+1, LENGTH(H_03)))) *100,0) AS H_03, "
+        "       COALESCE((SUM(SUBSTRING(H_04, 1, POSITION('/' IN H_04)-1)) / SUM(SUBSTRING(H_04, POSITION('/' IN H_04)+1, LENGTH(H_04)))) *100,0) AS H_04, "
+        "       COALESCE((SUM(SUBSTRING(H_05, 1, POSITION('/' IN H_05)-1)) / SUM(SUBSTRING(H_05, POSITION('/' IN H_05)+1, LENGTH(H_05)))) *100,0) AS H_05, "
+        "       COALESCE((SUM(SUBSTRING(H_06, 1, POSITION('/' IN H_06)-1)) / SUM(SUBSTRING(H_06, POSITION('/' IN H_06)+1, LENGTH(H_06)))) *100,0) AS H_06, "
+        "       COALESCE((SUM(SUBSTRING(H_07, 1, POSITION('/' IN H_07)-1)) / SUM(SUBSTRING(H_07, POSITION('/' IN H_07)+1, LENGTH(H_07)))) *100,0) AS H_07, "
+        "       COALESCE((SUM(SUBSTRING(H_08, 1, POSITION('/' IN H_08)-1)) / SUM(SUBSTRING(H_08, POSITION('/' IN H_08)+1, LENGTH(H_08)))) *100,0) AS H_08, "
+        "       COALESCE((SUM(SUBSTRING(H_09, 1, POSITION('/' IN H_09)-1)) / SUM(SUBSTRING(H_09, POSITION('/' IN H_09)+1, LENGTH(H_09)))) *100,0) AS H_09, "
+        "       COALESCE((SUM(SUBSTRING(H_10, 1, POSITION('/' IN H_10)-1)) / SUM(SUBSTRING(H_10, POSITION('/' IN H_10)+1, LENGTH(H_10)))) *100,0) AS H_10, "
+        "       COALESCE((SUM(SUBSTRING(H_11, 1, POSITION('/' IN H_11)-1)) / SUM(SUBSTRING(H_11, POSITION('/' IN H_11)+1, LENGTH(H_11)))) *100,0) AS H_11, "
+        "       COALESCE((SUM(SUBSTRING(H_12, 1, POSITION('/' IN H_12)-1)) / SUM(SUBSTRING(H_12, POSITION('/' IN H_12)+1, LENGTH(H_12)))) *100,0) AS H_12, "
+        "       COALESCE((SUM(SUBSTRING(H_13, 1, POSITION('/' IN H_13)-1)) / SUM(SUBSTRING(H_13, POSITION('/' IN H_13)+1, LENGTH(H_13)))) *100,0) AS H_13, "
+        "       COALESCE((SUM(SUBSTRING(H_14, 1, POSITION('/' IN H_14)-1)) / SUM(SUBSTRING(H_14, POSITION('/' IN H_14)+1, LENGTH(H_14)))) *100,0) AS H_14, "
+        "       COALESCE((SUM(SUBSTRING(H_15, 1, POSITION('/' IN H_15)-1)) / SUM(SUBSTRING(H_15, POSITION('/' IN H_15)+1, LENGTH(H_15)))) *100,0) AS H_15, "
+        "       COALESCE((SUM(SUBSTRING(H_16, 1, POSITION('/' IN H_16)-1)) / SUM(SUBSTRING(H_16, POSITION('/' IN H_16)+1, LENGTH(H_16)))) *100,0) AS H_16, "
+        "       COALESCE((SUM(SUBSTRING(H_17, 1, POSITION('/' IN H_17)-1)) / SUM(SUBSTRING(H_17, POSITION('/' IN H_17)+1, LENGTH(H_17)))) *100,0) AS H_17, "
+        "       COALESCE((SUM(SUBSTRING(H_18, 1, POSITION('/' IN H_18)-1)) / SUM(SUBSTRING(H_18, POSITION('/' IN H_18)+1, LENGTH(H_18)))) *100,0) AS H_18, "
+        "       COALESCE((SUM(SUBSTRING(H_19, 1, POSITION('/' IN H_19)-1)) / SUM(SUBSTRING(H_19, POSITION('/' IN H_19)+1, LENGTH(H_19)))) *100,0) AS H_19, "
+        "       COALESCE((SUM(SUBSTRING(H_20, 1, POSITION('/' IN H_20)-1)) / SUM(SUBSTRING(H_20, POSITION('/' IN H_20)+1, LENGTH(H_20)))) *100,0) AS H_20, "
+        "       COALESCE((SUM(SUBSTRING(H_21, 1, POSITION('/' IN H_21)-1)) / SUM(SUBSTRING(H_21, POSITION('/' IN H_21)+1, LENGTH(H_21)))) *100,0) AS H_21, "
+        "       COALESCE((SUM(SUBSTRING(H_22, 1, POSITION('/' IN H_22)-1)) / SUM(SUBSTRING(H_22, POSITION('/' IN H_22)+1, LENGTH(H_22)))) *100,0) AS H_22, "
+        "       COALESCE((SUM(SUBSTRING(H_23, 1, POSITION('/' IN H_23)-1)) / SUM(SUBSTRING(H_23, POSITION('/' IN H_23)+1, LENGTH(H_23)))) *100,0) AS H_23, "
+        "       COALESCE((SUM(SUBSTRING(H_24, 1, POSITION('/' IN H_24)-1)) / SUM(SUBSTRING(H_24, POSITION('/' IN H_24)+1, LENGTH(H_24)))) *100,0) AS H_24, "
+        "       COALESCE((SUM(SUBSTRING(H_25, 1, POSITION('/' IN H_25)-1)) / SUM(SUBSTRING(H_25, POSITION('/' IN H_25)+1, LENGTH(H_25)))) *100,0) AS H_25, "
+        "       COALESCE((SUM(SUBSTRING(H_26, 1, POSITION('/' IN H_26)-1)) / SUM(SUBSTRING(H_26, POSITION('/' IN H_26)+1, LENGTH(H_26)))) *100,0) AS H_26, "
+        "       COALESCE((SUM(SUBSTRING(H_27, 1, POSITION('/' IN H_27)-1)) / SUM(SUBSTRING(H_27, POSITION('/' IN H_27)+1, LENGTH(H_27)))) *100,0) AS H_27, "
+        "       COALESCE((SUM(SUBSTRING(H_28, 1, POSITION('/' IN H_28)-1)) / SUM(SUBSTRING(H_28, POSITION('/' IN H_28)+1, LENGTH(H_28)))) *100,0) AS H_28, "
+        "       COALESCE((SUM(SUBSTRING(H_29, 1, POSITION('/' IN H_29)-1)) / SUM(SUBSTRING(H_29, POSITION('/' IN H_29)+1, LENGTH(H_29)))) *100,0) AS H_29, "
+        "       COALESCE((SUM(SUBSTRING(H_30, 1, POSITION('/' IN H_30)-1)) / SUM(SUBSTRING(H_30, POSITION('/' IN H_30)+1, LENGTH(H_30)))) *100,0) AS H_30 "
+        "  FROM educacaodb.consulta_caed "
+        "         WHERE ano = %(ano)s "
+        "         AND UPPER(materia) = UPPER(%(materia)s) "
+        "         AND UPPER(turma) = UPPER(%(turma)s) "
+        "         AND serie = %(serie)s "
+        "         AND bimestre = %(bimestre)s "
+        "    AND participacao = 'SIM' "
+        "    AND recuperacao_continuada  = 'SIM' ")
+
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_consulta = {
+        'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'bimestre': bimestre
+    }   
+    
+    query_consulta.execute(string_consulta, data_consulta)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results= query_consulta.fetchall()
+
+    #------------------BUSCAR CÓDIGO DA HABILIDADE-----------------------------------#
+    query_habilidade=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_habilidade= ("SELECT h.*, "
+        " coalesce(concat(replace(upper(h.questao), '_', ' '),' (', h.cod_da_habilidade ,')'), replace(upper(h.questao), '_', ' ')) as label "
+        " FROM educacaodb.habilidade_caed h "
+        " WHERE ano = %(ano)s"
+        " AND UPPER(materia) = UPPER(%(materia)s)"
+        " AND UPPER(turma) = UPPER(%(turma)s)"
+        " AND serie = %(serie)s"
+        " AND bimestre = %(bimestre)s")
+
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_habilidade = {
+        'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'bimestre': bimestre
+    }
+        
+    #executa a consulta   
+    query_habilidade.execute(string_habilidade, data_habilidade)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results_habilidade= query_habilidade.fetchall()
+    #-----------------------------------------------------#
+
+    #print(results_habilidade)
+
+    #extrai cabeçalho da linha
+    row_headers=[x[0] for x in query_consulta.description]
+    row_headers_table = [x for x in row_headers if x.find("H_") > -1]
+
+    for i in range(len(row_headers_table)):
+        for row in results_habilidade:
+            if (row[6].upper() == row_headers_table[i].upper()):
+                row_headers_table[i] = row[8]
+
+    #inicializa a array de json
+    json_array=[]
+
+
+    #percorre dados da query de consulta e insere no json
+    for row in results:
+        json_array.append(dict(zip(row_headers,row)))
+
+    json_data = {'resultadoCaed':json_array, 'table_header': row_headers_table}   
+    
+    #converte para json
+    json_compatible_item_data = jsonable_encoder(json_data)
+
+    return json_compatible_item_data
