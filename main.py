@@ -8,9 +8,9 @@ import io
 from fastapi.middleware.cors import CORSMiddleware
 
 #cria conexão com o banco de dados mysql
-conexion = mysql.connector.connect(user='l1uoq1uhakf4pjgd', password='bbixp40cxjv8nt8z',
-                              host='w3epjhex7h2ccjxx.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-                              database='xlp28lrcxw12t0hf')
+conexion = mysql.connector.connect(user=HRK_DB_USER, password=HRK_DB_PASS,
+                              host=HRK_DB_HOST,
+                              database=HRK_DB_NAME)
 #conexion.close()
 
 
