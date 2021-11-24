@@ -83,7 +83,7 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
         " h_28, "
         " h_29, "
         " h_30 "    
-        " FROM educacaodb.consulta_caed "
+        " FROM consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
@@ -110,7 +110,7 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
     query_habilidade=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_habilidade= ("SELECT * FROM educacaodb.habilidade_caed "
+    string_habilidade= ("SELECT * FROM habilidade_caed "
         " WHERE ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
         " AND UPPER(turma) = UPPER(%(turma)s)"
@@ -172,7 +172,7 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     query_consulta=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_consulta= ("SELECT * FROM educacaodb.consulta_caed "
+    string_consulta= ("SELECT * FROM consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
@@ -197,7 +197,7 @@ def consulta_caed(recuperacao:str, ano: int, materia: str, turma: str, serie: in
     query_habilidade=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_habilidade= ("SELECT * FROM educacaodb.habilidade_caed "
+    string_habilidade= ("SELECT * FROM habilidade_caed "
         " WHERE ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
         " AND UPPER(turma) = UPPER(%(turma)s)"
@@ -251,7 +251,7 @@ def habilidade_caed(ano: int, materia: str, turma: str, serie: int, bimestre: in
     query_consulta=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_consulta= ("SELECT * FROM educacaodb.habilidade_caed "
+    string_consulta= ("SELECT * FROM habilidade_caed "
         " WHERE ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
         " AND UPPER(turma) = UPPER(%(turma)s)"
@@ -291,7 +291,7 @@ def atualizar_habilidade(id: int, cod_da_habilidade: str):
     query_update=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_update= ("UPDATE educacaodb.habilidade_caed "
+    string_update= ("UPDATE habilidade_caed "
         " SET cod_da_habilidade = %(cod_da_habilidade)s"
         " WHERE id = %(id)s")
        
@@ -310,7 +310,7 @@ def atualizar_habilidade(id: int, cod_da_habilidade: str):
     query_consulta=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_consulta= ("SELECT * FROM educacaodb.habilidade_caed "
+    string_consulta= ("SELECT * FROM habilidade_caed "
         " WHERE id = %(id)s"
     )
 
@@ -380,7 +380,7 @@ async def create_upload_file(content: UploadFile = File(...)):
     query_consulta=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_consulta= ("SELECT * FROM educacaodb.consulta_caed "
+    string_consulta= ("SELECT * FROM consulta_caed "
         " WHERE recuperacao_continuada = %(recuperacao)s"
         " AND ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
@@ -421,7 +421,7 @@ async def create_upload_file(content: UploadFile = File(...)):
     query_consulta_hab=conexion.cursor()
 
     #cria string com comando de consulta 
-    string_consulta_hab= ("SELECT * FROM educacaodb.habilidade_caed "
+    string_consulta_hab= ("SELECT * FROM habilidade_caed "
         " WHERE ano = %(ano)s"
         " AND materia = %(materia)s"
         " AND turma = %(turma)s"
@@ -561,7 +561,7 @@ def resultado_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int
         "       ROUND(COALESCE((SUM(SUBSTRING(H_28, 1, POSITION('/' IN H_28)-1)) / SUM(SUBSTRING(H_28, POSITION('/' IN H_28)+1, LENGTH(H_28)))) *100,0)) AS H_28, "
         "       ROUND(COALESCE((SUM(SUBSTRING(H_29, 1, POSITION('/' IN H_29)-1)) / SUM(SUBSTRING(H_29, POSITION('/' IN H_29)+1, LENGTH(H_29)))) *100,0)) AS H_29, "
         "       ROUND(COALESCE((SUM(SUBSTRING(H_30, 1, POSITION('/' IN H_30)-1)) / SUM(SUBSTRING(H_30, POSITION('/' IN H_30)+1, LENGTH(H_30)))) *100,0)) AS H_30  "
-        "  FROM educacaodb.consulta_caed "
+        "  FROM consulta_caed "
         "         WHERE ano = %(ano)s "
         "         AND UPPER(materia) = UPPER(%(materia)s) "
         "         AND UPPER(turma) = UPPER(%(turma)s) "
@@ -601,7 +601,7 @@ def resultado_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int
         "       ROUND(COALESCE((SUM(SUBSTRING(H_28, 1, POSITION('/' IN H_28)-1)) / SUM(SUBSTRING(H_28, POSITION('/' IN H_28)+1, LENGTH(H_28)))) *100,0)) AS H_28, "
         "       ROUND(COALESCE((SUM(SUBSTRING(H_29, 1, POSITION('/' IN H_29)-1)) / SUM(SUBSTRING(H_29, POSITION('/' IN H_29)+1, LENGTH(H_29)))) *100,0)) AS H_29, "
         "       ROUND(COALESCE((SUM(SUBSTRING(H_30, 1, POSITION('/' IN H_30)-1)) / SUM(SUBSTRING(H_30, POSITION('/' IN H_30)+1, LENGTH(H_30)))) *100,0)) AS H_30  "
-        "  FROM educacaodb.consulta_caed "
+        "  FROM consulta_caed "
         "         WHERE ano = %(ano)s "
         "         AND UPPER(materia) = UPPER(%(materia)s) "
         "         AND UPPER(turma) = UPPER(%(turma)s) "
@@ -626,7 +626,7 @@ def resultado_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int
     #cria string com comando de consulta 
     string_habilidade= ("SELECT h.*, "
         " coalesce(concat(replace(upper(h.questao), '_', ' '),' (', h.cod_da_habilidade ,')'), replace(upper(h.questao), '_', ' ')) as label "
-        " FROM educacaodb.habilidade_caed h "
+        " FROM habilidade_caed h "
         " WHERE ano = %(ano)s"
         " AND UPPER(materia) = UPPER(%(materia)s)"
         " AND UPPER(turma) = UPPER(%(turma)s)"
