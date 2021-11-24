@@ -1,4 +1,5 @@
 #from typing import Optional
+import os
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
 import pandas
@@ -8,9 +9,10 @@ import io
 from fastapi.middleware.cors import CORSMiddleware
 
 #cria conexão com o banco de dados mysql
-conexion = mysql.connector.connect(user=HRK_DB_USER, password=HRK_DB_PASS,
-                              host=HRK_DB_HOST,
-                              database=HRK_DB_NAME)
+conexion = mysql.connector.connect(user=os.environ.get('HRK_DB_USER', None), 
+                              password=os.environ.get('HRK_DB_PASS', None),
+                              host=os.environ.get('HRK_DB_HOST', None),
+                              database=os.environ.get('HRK_DB_NAME', None))
 #conexion.close()
 
 
