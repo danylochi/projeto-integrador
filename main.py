@@ -13,6 +13,12 @@ conexion = mysql.connector.connect(user=os.environ.get('HRK_DB_USER', None),
                               password=os.environ.get('HRK_DB_PASS', None),
                               host=os.environ.get('HRK_DB_HOST', None),
                               database=os.environ.get('HRK_DB_NAME', None))
+
+#conexion = mysql.connector.connect(user='root', 
+#                              password='root',
+#                              host='localhost',
+#                              database='educacaodb')
+
 #conexion.close()
 
 
@@ -45,10 +51,10 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
     string_consulta= ("SELECT "
         " recuperacao_continuada AS `RECUPERACAO CONTINUADA`, "
         " ano AS `ano`, "
-        " materia AS `materia`, "
-        " turma AS `turma`, "
-        " serie AS `serie`, "
         " bimestre AS `Bimestre`, "
+        " serie AS `serie`, "
+        " turma AS `turma`, "
+        " materia AS `materia`, "
         " estudante AS `ESTUDANTE`, "
         " participacao AS `PARTICIPAÇÃO`, "
         " numero_itens_respondidos AS `Nº DE ITENS RESPONDIDOS`, "
@@ -135,12 +141,17 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
     #extrai cabeçalho da linha
     row_headers=[x[0] for x in query_consulta.description]
 
-    for i in range(len(row_headers)):
-        for row in results_habilidade:
-            if (row[6] == row_headers[i] and row[7] != None):
-                row_headers[i] = row[7]
-            else:
-                row_headers[i] = row_headers[i].upper().replace("_", " ")
+    if vazia == 0:
+        for i in range(len(row_headers)):
+            for row in results_habilidade:
+                if (row[6] == row_headers[i] and row[7] != None):
+                    row_headers[i] = row[7]
+                else:
+                    row_headers[i] = row_headers[i].upper().replace("_", " ")
+    else:
+        for i in range(len(row_headers)):
+            row_headers[i] = row_headers[i].replace("h_", "H ")
+
 
     data_frame = pandas.DataFrame(results, columns = row_headers)
 
@@ -149,11 +160,12 @@ async def download_caed(recuperacao:str, ano: int, materia: str, turma: str, ser
 
     data_frame.to_excel(writer, index=False, sheet_name='Sheet1')
 
-    # Auto-adjust columns' width
-    for column in data_frame:
-        column_width = max(data_frame[column].astype(str).map(len).max(), len(column))
-        col_idx = data_frame.columns.get_loc(column)
-        writer.sheets['Sheet1'].set_column(col_idx, col_idx, column_width+4)
+    if vazia == 0:
+        # Auto-adjust columns' width
+        for column in data_frame:
+            column_width = max(data_frame[column].astype(str).map(len).max(), len(column))
+            col_idx = data_frame.columns.get_loc(column)
+            writer.sheets['Sheet1'].set_column(col_idx, col_idx, column_width+4)
 
     writer.close()
 
