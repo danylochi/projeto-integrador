@@ -30,6 +30,7 @@ origins = [
     "http://localhost:8080",
     "http://localhost:3000",
     "https://webescolacaed.herokuapp.com",
+    "http://webescolacaed.herokuapp.com",
 ]
 
 app.add_middleware(
