@@ -562,13 +562,13 @@ async def create_upload_file(content: UploadFile = File(...)):
 
         #cria dados de aluno com o conteúdo da linha para insert/update 
         data_qtn = {
-        'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'semestre': 1 if row['Bimestre'] >= 2 else 2, 
+        'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'semestre': 1 if row['Bimestre'] <= 2 else 2, 
         'estudante': row['ESTUDANTE']
         } 
 
         #cria dados de aluno com o conteúdo da linha para consulta  
         data_consulta_qtn = {
-        'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'semestre': 1 if row['Bimestre'] >= 2 else 2, 
+        'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'semestre': 1 if row['Bimestre'] <= 2 else 2, 
         'estudante': row['ESTUDANTE']
         }
         
@@ -604,12 +604,11 @@ async def create_upload_file(content: UploadFile = File(...)):
     query_update.close()
     query_insert_hab.close()
     query_consulta_hab.close()    
+    query_insert_qtn.close()
+    query_consulta_qtn.close() 
+    query_insert_qtn_op.close()
 
     #conexion.close()
-
-
-    
-
 
     return {"filename": content.filename}
 
