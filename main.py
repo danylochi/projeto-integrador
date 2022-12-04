@@ -446,6 +446,41 @@ async def create_upload_file(content: UploadFile = File(...)):
         " AND questao = %(questao)s")  
 
     #-----------------------------------------------------------------------------------------------------     
+
+    #---------------------------------COMANDOS TABELA QUESTIONARIO------------------------------------------------------
+    # prepara query de insert 
+    query_insert_qtn= conexion.cursor()
+
+    #cria string com comando de insert 
+    string_insert_qtn= ("INSERT INTO questionario_turma (ano, materia, turma, serie, semestre, estudante) "
+        " VALUES (%(ano)s, %(materia)s,%(turma)s,%(serie)s,%(semestre)s,%(estudante)s )")
+
+    #prepara query de consulta 
+    query_consulta_qtn=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_consulta_qtn= ("SELECT * FROM questionario_turma "
+        " WHERE ano = %(ano)s"
+        " AND materia = %(materia)s"
+        " AND turma = %(turma)s"
+        " AND serie = %(serie)s"
+        " AND semestre = %(semestre)s" 
+        " AND UPPER(estudante) = UPPER(%(estudante)s)")
+
+    # prepara query de insert 
+    query_insert_qtn_op = conexion.cursor()
+
+    #cria string com comando de insert 
+    string_insert_qtn_op= ("INSERT INTO questio_turma_op (idquestionario_turma, idquestionario) "
+        " VALUES (%(idquestionario_turma)s, %(idquestionario)s )")
+
+    #prepara query de consulta 
+    query_consulta_questionario=conexion.cursor(dictionary=True)    
+
+    #cria string com comando de consulta 
+    string_consulta_questionario= ("SELECT * FROM questionario ")
+
+    #-----------------------------------------------------------------------------------------------------     
     
     
     #---------------------------------EXECUÇÃO TABELA CONSULTA CAED------------------------------------------------------
@@ -520,6 +555,45 @@ async def create_upload_file(content: UploadFile = File(...)):
             query_insert_hab.fetchall()
 
     #-----------------------------------------------------------------------------------------------------            
+
+    #---------------------------------EXECUÇÃO TABELA QUESTIONARIO------------------------------------------------------
+    #percorre planilha linha a linha através do data frame 
+    for index, row in data_frame.iterrows(): 
+
+        #cria dados de aluno com o conteúdo da linha para insert/update 
+        data_qtn = {
+        'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'semestre': 1 if row['Bimestre'] >= 2 else 2, 
+        'estudante': row['ESTUDANTE']
+        } 
+
+        #cria dados de aluno com o conteúdo da linha para consulta  
+        data_consulta_qtn = {
+        'ano': row['ano'], 'materia': row['materia'], 'turma': row['turma'], 'serie': row['serie'], 'semestre': 1 if row['Bimestre'] >= 2 else 2, 
+        'estudante': row['ESTUDANTE']
+        }
+        
+        #executa a consulta   
+        query_consulta_qtn.execute(string_consulta_qtn, data_consulta_qtn)
+
+        #força carregar todos os dados da consulta, ignora modo lazy 
+        query_consulta_qtn.fetchall()
+
+        #verifica se linha já foi inserida 
+        if query_consulta_qtn.rowcount == 0:
+            #se rowcount=0 significa que linha não foi inserida e devemos inseri-la 
+            query_insert_qtn.execute(string_insert_qtn, data_qtn)
+            query_insert_qtn.fetchall()
+
+            query_consulta_questionario.execute(string_consulta_questionario)
+            results = query_consulta_questionario.fetchall()
+
+            for row in results:
+                data_insert_qtn_op = {
+                'idquestionario_turma': query_insert_qtn.lastrowid, 'idquestionario': row['idquestionario']
+                }
+                query_insert_qtn_op.execute(string_insert_qtn_op, data_insert_qtn_op)
+                query_insert_qtn_op.fetchall()           
+    #-----------------------------------------------------------------------------------------------------
 
     #efetiva todas as transações no banco 
     conexion.commit()
@@ -686,3 +760,223 @@ def resultado_caed(ano: int, materia: str, turma: str, serie: int, bimestre: int
     json_compatible_item_data = jsonable_encoder(json_data)
 
     return json_compatible_item_data
+#-----------------------------------------------------------------------------------------
+@app.get("/questionarioturma/")
+def questionario_turma(ano: int, materia: str, turma: str, serie: int, semestre: int):
+    #prepara query de consulta 
+    query_consulta=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_consulta= ("SELECT qt.*,  "
+        "        CASE WHEN (SELECT COUNT(*)   "
+        "           FROM questio_turma_op qtp  "
+        "          WHERE qtp.idquestionario_turma = qt.idquestionario_turma "
+        "            AND qtp.idopcoes IS NULL) = 0 THEN 'RESPONDIDO' ELSE 'PENDENTE' END AS STATUS_calc "
+        " FROM questionario_turma qt "
+        " WHERE qt.ano = %(ano)s"
+        " AND UPPER(qt.materia) = UPPER(%(materia)s)"
+        " AND UPPER(qt.turma) = UPPER(%(turma)s)"
+        " AND qt.serie = %(serie)s"
+        " AND qt.semestre = %(semestre)s")
+
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_consulta = {
+        'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'semestre': semestre
+    }
+        
+    #executa a consulta   
+    query_consulta.execute(string_consulta, data_consulta)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results= query_consulta.fetchall()
+
+    #extrai cabeçalho da linha
+    row_headers=[x[0] for x in query_consulta.description]
+
+    #inicializa a array de json
+    json_data=[]
+
+    #percorre dados da query de consulta e insere no json
+    for row in results:
+        json_data.append(dict(zip(row_headers,row)))
+    
+    #converte para json
+    json_compatible_item_data = jsonable_encoder(json_data)
+
+    return json_compatible_item_data    
+
+#-----------------------------------------------------------------------------------------
+@app.get("/questionarioturmaop/")
+def questionario_turma_op(idquestionario_turma: int):
+    
+    #prepara query de consulta 
+    query_consulta=conexion.cursor(dictionary=False)
+
+    #prepara query de consulta 
+    query_consulta_op=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_consulta= ("SELECT qto.*, q.ordem, q.pergunta  "
+        " FROM questio_turma_op qto "
+        " LEFT JOIN questionario q ON q.idquestionario = qto.idquestionario "
+        " WHERE idquestionario_turma = %(idquestionario_turma)s "
+        " ORDER BY q.ordem ")
+
+    #cria string com comando de consulta 
+    string_consulta_op= ("SELECT * FROM opcoes "
+        " WHERE idquestionario = %(idquestionario)s "
+        " ORDER BY ordem ")        
+
+    #cria dados de aluno com o conteúdo da linha para consulta  
+    data_consulta = {
+        'idquestionario_turma': idquestionario_turma
+    }
+        
+    #executa a consulta   
+    query_consulta.execute(string_consulta, data_consulta)
+
+    #força carregar todos os dados da consulta, ignora modo lazy            
+    results= query_consulta.fetchall()
+
+    #extrai cabeçalho da linha
+    row_headers=[x[0] for x in query_consulta.description]
+
+    #inicializa a array de json
+    json_data=[]
+
+    #percorre dados da query de consulta e insere no json
+    for row in results:   
+        json_data.append(dict(zip(row_headers,row)))
+
+    #percorre dados da query de consulta e insere no json
+    for item in json_data:
+        json_data_op = []
+
+        #cria dados de aluno com o conteúdo da linha para consulta  
+        data_consulta_op = {
+            'idquestionario': item['idquestionario'] # 0 - idquestionario
+        }
+
+        #executa a consulta   
+        query_consulta_op.execute(string_consulta_op, data_consulta_op)
+
+        #força carregar todos os dados da consulta, ignora modo lazy            
+        results_op= query_consulta_op.fetchall()
+
+        #extrai cabeçalho da linha
+        row_headers_op=[x[0] for x in query_consulta_op.description]
+
+            #percorre dados da query de consulta e insere no json
+        for row_op in results_op:   
+            json_data_op.append(dict(zip(row_headers_op,row_op)))
+
+        item['opcoes'] = json_data_op 
+    
+    #converte para json
+    json_compatible_item_data = jsonable_encoder(json_data)
+
+    return json_compatible_item_data        
+#-------------------------------------------------------------------------------------------------
+@app.put("/questionarioturmaop/")
+def atualizar_questionario_turma_op(questionarioturmaop: list):
+    print(questionarioturmaop)
+    #prepara query de consulta 
+    query_update=conexion.cursor()
+
+    #cria string com comando de consulta 
+    string_update= ("UPDATE  questio_turma_op "
+        " SET idopcoes = %(idopcoes)s"
+        " WHERE idquestio_turma_op = %(idquestio_turma_op)s")
+
+    for item in questionarioturmaop:    
+        #cria dados de aluno com o conteúdo da linha para consulta  
+        data_update = {
+            'idopcoes': item['idopcoes'], 'idquestio_turma_op': item['idquestio_turma_op']
+        }
+            
+        #executa a consulta   
+        query_update.execute(string_update, data_update)
+
+        #força carregar todos os dados da consulta, ignora modo lazy            
+        query_update.fetchall()
+
+    conexion.commit()
+
+    query_update.close()
+#-------------------------------------------------------------------------------------------------    
+@app.get("/resultadoquestionario/")
+def resultado_caed(ano: int, materia: str, turma: str, serie: int, semestre: int):
+    #prepara query de consulta 
+    query_consulta=conexion.cursor()
+
+    query_consulta_grupo=conexion.cursor(dictionary=False)
+
+    #cria string com comando de consulta 
+    string_consulta= ("SELECT COALESCE(o.item_resultado, o.item) AS item, (count(0) / "
+	" (SELECT count(0) "
+	" FROM questionario_turma qtt "
+	" LEFT JOIN questio_turma_op qtot ON qtot.idquestionario_turma = qtt.idquestionario_turma "
+	" LEFT JOIN questionario qts ON qts.idquestionario = qtot.idquestionario "
+	" LEFT JOIN opcoes ot ON ot.idopcoes = qtot.idopcoes "
+	" LEFT JOIN questionario_grupo qgt ON qgt.idquestionario_grupo = qts.idquestionario_grupo "
+        "         WHERE qtt.ano = %(ano)s "
+        "         AND UPPER(qtt.materia) = UPPER(%(materia)s) "
+        "         AND UPPER(qtt.turma) = UPPER(%(turma)s) "
+        "         AND qtt.serie = %(serie)s "
+        "         AND qtt.semestre = %(semestre)s "
+        "         AND ot.item IS NOT NULL "        
+	" AND qts.idquestionario_grupo = q.idquestionario_grupo)) * 100 AS porcentagem "
+	" FROM questionario_turma qt "
+	" LEFT JOIN questio_turma_op qto ON qto.idquestionario_turma = qt.idquestionario_turma "
+	" LEFT JOIN questionario q ON q.idquestionario = qto.idquestionario "
+	" LEFT JOIN opcoes o ON o.idopcoes = qto.idopcoes "
+	" LEFT JOIN questionario_grupo qg ON qg.idquestionario_grupo = q.idquestionario_grupo "
+        "         WHERE qt.ano = %(ano)s "
+        "         AND UPPER(qt.materia) = UPPER(%(materia)s) "
+        "         AND UPPER(qt.turma) = UPPER(%(turma)s) "
+        "         AND qt.serie = %(serie)s "
+        "         AND qt.semestre = %(semestre)s "
+        "         AND q.idquestionario_grupo = %(idquestionario_grupo)s "
+        "         AND o.item IS NOT NULL "
+	" GROUP BY COALESCE(o.item_resultado, o.item) ")
+
+    string_consulta_grupo= ("select * from questionario_grupo ")
+
+    
+
+    query_consulta_grupo.execute(string_consulta_grupo)
+    results_grupo = query_consulta_grupo.fetchall()
+
+    #inicializa a array de json
+    json_data_grupo=[]
+
+    row_headers_grupo=[x[0] for x in query_consulta_grupo.description]
+
+    for row_grupo in results_grupo:
+        json_data_grupo.append(dict(zip(row_headers_grupo,row_grupo)))
+
+    for item in json_data_grupo:
+        json_data=[]
+
+        #cria dados de aluno com o conteúdo da linha para consulta  
+        data_consulta = {
+            'ano': ano, 'materia': materia, 'turma': turma, 'serie': serie, 'semestre': semestre, 'idquestionario_grupo': item['idquestionario_grupo']
+        }
+
+        query_consulta.execute(string_consulta, data_consulta)
+
+        #força carregar todos os dados da consulta, ignora modo lazy            
+        results= query_consulta.fetchall()
+
+        row_headers=[x[0] for x in query_consulta.description]
+
+        for row in results:
+            json_data.append(dict(zip(row_headers,row)))
+
+        item['items'] = json_data
+
+    #converte para json
+    json_compatible_item_data = jsonable_encoder(json_data_grupo)
+
+    return json_compatible_item_data
+#-----------------------------------------------------------------------------------------
